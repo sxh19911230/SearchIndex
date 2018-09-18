@@ -5,8 +5,8 @@
  *      Author: Forrest
  */
 
-#ifndef SEARCHINDEX_H_
-#define SEARCHINDEX_H_
+#ifndef INVERTEDINDEXADT_H_
+#define INVERTEDINDEXADT_H_
 #include <string>
 #include <map>
 #include <tuple>
@@ -14,9 +14,9 @@
 #include <memory>
 #include <set>
 
-class SearchIndex {
+class InvertedIndexADT {
 public:
-	SearchIndex(std::string filename);
+	InvertedIndexADT(std::string filename);
 	void print_inveted_index();
 private:
 	//helper function
@@ -31,4 +31,4 @@ private:
 
 class FileNotExist{};
 
-#endif /* SEARCHINDEX_H_ */
+#endif /* INVERTEDINDEXADT_H_ */

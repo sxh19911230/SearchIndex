@@ -9,14 +9,15 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include "SearchIndex.h"
+
+#include "InvertedIndexADT.h"
 using namespace std;
 
-SearchIndex::SearchIndex(std::string filename) {
+InvertedIndexADT::InvertedIndexADT(std::string filename) {
 	this->init_inveted_index(filename);
 }
 
-void SearchIndex::print_inveted_index() {
+void InvertedIndexADT::print_inveted_index() {
 	for(auto i = inverted_index.begin();i != inverted_index.end();++i){
 	    cout << i->first << '\n' << get<0>(i->second).size() <<','<<get<1>(i->second).size();
 	    for (auto j = get<1>(i->second).begin();j != get<1>(i->second).end();++j)
@@ -25,7 +26,7 @@ void SearchIndex::print_inveted_index() {
 	    }
 }
 
-void SearchIndex::init_inveted_index(std::string filename) {
+void InvertedIndexADT::init_inveted_index(std::string filename) {
 	ifstream file(filename);
 	if (!file) {
 		throw FileNotExist{};
