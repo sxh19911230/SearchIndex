@@ -18,7 +18,7 @@
 struct TermDetail {
 	std::map<int,int> document_occurence;
 	//list(document#, index#)
-	std::vector<std::vector<int>> index;
+	std::vector<std::vector<int>> term_index;
 };
 
 class InvertedIndexADT {
@@ -27,8 +27,8 @@ public:
 
 
 	//ADT functions
-	std::vector<int> next(std::string term, int doc_num, int location);
-	std::vector<int> prev(std::string term, int doc_num, int location);
+	const std::vector<int>& next(std::string term, int doc_num, int current);
+	const std::vector<int>& prev(std::string term, int doc_num, int current);
 
 
 	// print the index DEBUG use
@@ -41,7 +41,9 @@ private:
 	//inverted index
 	//(term: (document occurrences, list(document#, index#)))
 	 std::map<std::string,TermDetail> inverted_index{};
-	 int document_num=0;
+
+	 //last index positions for terms for next
+	 std::map<std::string, int> list_index_positions;
 };
 
 class FileNotExist{};
