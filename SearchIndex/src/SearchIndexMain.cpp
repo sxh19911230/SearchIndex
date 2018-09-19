@@ -18,10 +18,6 @@ int main(int args, char** argv) try {
 	usage(argv[0]);
 }
 
-
-
-
-
 void usage(char* arg) {
 	cout << "usage: " << arg << "<file> [cos|proximity] <#output> <query>\n";
 }

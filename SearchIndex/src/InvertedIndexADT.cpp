@@ -19,13 +19,23 @@ InvertedIndexADT::InvertedIndexADT(std::string filename) {
 
 void InvertedIndexADT::print_inveted_index() {
 	for(auto i = inverted_index.begin();i != inverted_index.end();++i){
-	    cout << i->first << '\n' << get<0>(i->second).size() <<','<<get<1>(i->second).size();
-	    for (auto j = get<1>(i->second).begin();j != get<1>(i->second).end();++j)
-	        cout << ",(" << (*j)[0] << ',' << (*j)[1] << ')';
-	    cout <<'\n';
-	    }
+	    cout << i->first << '\n' << i->second.document_occurence.size() <<','<<i->second.index.size() << '\n';
+	    for (auto j = i->second.document_occurence.begin();j!= i->second.document_occurence.end();j++)
+	    	cout << '(' <<j->first << ',' << j->second << ") ";
+	    cout << '\n';
+	    for (auto j = i->second.index.begin();j != i->second.index.end();++j)
+	        cout << '(' << j->at(0) << ',' << j->at(1) << ") ";
+	    cout <<endl;
+	}
+}
+/*
+std::shared_ptr<int[]> InvertedIndexADT::next(std::string term, int doc_num, int location) {
+	if ()
 }
 
+std::shared_ptr<int[]> InvertedIndexADT::prev(std::string term, int doc_num, int location) {
+}
+*/
 void InvertedIndexADT::init_inveted_index(std::string filename) {
 	ifstream file(filename);
 	if (!file) {
@@ -42,8 +52,8 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 	    	transform (begin(line),end(line),begin(line), [](char c){if (!isalnum(c)) c=' '; return ::tolower(c);});
             istringstream str(line);
             for (string term; str >> term;) {
-            	get<0>(inverted_index[term]).insert(document_num);
-            	get<1>(inverted_index[term]).emplace_back(new int[2] {document_num, ++indexNum});
+            	++inverted_index[term].document_occurence[document_num];
+            	inverted_index[term].index.push_back(vector<int>{document_num, ++indexNum});
             }
         }
 	}
