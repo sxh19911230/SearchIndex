@@ -15,7 +15,8 @@
 using namespace std;
 
 //inline vector returned when result not found
-static const Term& unfounded{-1,-1};
+static const Term& infinity{INT_MAX,INT_MAX};
+static const Term& ninfinity{INT_MIN,INT_MIN};
 
 InvertedIndexADT::InvertedIndexADT(std::string filename) {
 	this->init_inveted_index(filename);
@@ -39,7 +40,7 @@ const Term& InvertedIndexADT::next(const std::string& term, int doc_num, int ind
 	const Term current {doc_num,ind_num};
 
 	if (P.size()==0 || P.back() <= current)
-		return unfounded;
+		return infinity;
 	if (P[0] > current){
 			c[term]=0;
 			return P[c[term]];
@@ -69,7 +70,7 @@ const Term& InvertedIndexADT::prev(const std::string& term, int doc_num, int ind
 		const Term current {doc_num,ind_num};
 
 		if (P.size()==0 || P.front() >= current)
-			return unfounded;
+			return ninfinity;
 		if (P.back() < current){
 			c[term]=P.size()-1;
 			return P[c[term]];
@@ -176,4 +177,16 @@ bool operator==(const Term&a,const Term&b) {
 	return a.doc == b.doc && a.index == b.index;
 }
 
+pair<int, int> InvertedIndexADT::nextCover(const std::vector<std::string>& terms, int doc_num, int ind_num) {
+	set<Term,greater<Term>> result{};
+	for(const string& s : terms)
+		result.insert(next(s,doc_num,ind_num));
+	Term v= *result.begin();
+	if (v == infinity) return pair<int,int>{INT_MAX,INT_MAX};
+	Term u = v;
+	for(const string& s : terms)
+		u = u > inverted_index[s].terms[c[s]] ? inverted_index[s].terms[c[s]] : u;
+	if(v.doc == u.doc) return pair<int,int>{u.index,v.index};
+	else return nextCover(terms, u.doc,u.index);
 
+}
