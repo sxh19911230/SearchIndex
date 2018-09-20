@@ -9,10 +9,12 @@
 #define INVERTEDINDEXADT_H_
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <tuple>
 #include <vector>
 #include <memory>
 #include <set>
+
 
 struct Term {
 	int doc;
@@ -37,9 +39,15 @@ public:
 
 
 	//ADT functions
-	const Term& next(const std::string& term, int doc_num, int current);
-	const Term& prev(const std::string& term, int doc_num, int current);
+	const Term& next(const std::string& term, int doc_num, int ind_num);
+	const Term& prev(const std::string& term, int doc_num, int ind_num);
 
+	//These two probably will not be implemented
+	int nextDoc(std::string& term, int doc_num);
+	int prevDoc(std::string& term, int doc_num);
+
+	//rankCosine
+	std::multimap<double,int,std::greater<double>> rankCosine(std::vector<std::string>&);
 
 	// print the index DEBUG use
 	void print_inveted_index();
@@ -51,11 +59,12 @@ private:
 	//data members
 	//inverted index
 	//(term: (document occurrences, list(document#, index#)))
-	 std::map<std::string,TermList> inverted_index{};
+	 std::unordered_map<std::string,TermList> inverted_index{};
+	 int document_num{};
 
 	 //last index positions for terms for next
 	 //Galloping Search
-	 std::map<std::string, std::size_t> c;
+	 std::unordered_map<std::string, std::size_t> c{};
 };
 
 class FileNotExist{};

@@ -9,6 +9,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 
 #include "InvertedIndexADT.h"
 using namespace std;
@@ -96,24 +97,28 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 		throw FileNotExist{};
 	}
 	int indexNum=0;
-	int document_num = 1;
+	document_num = 1;
 	for (string line; getline(file,line);++indexNum) {
 	        //New Doc if \n\n, reset indexNum
 	    if (!line.size()) {
 	        ++document_num;
 	        indexNum=-1;
 	    } else {
-	    	/* term divided by any punctuation
-	    	 * e.g. U.S.A -> u, s, and a
-	    	transform (begin(line),end(line),begin(line), [](char c){if (!isalnum(c)) c=' '; return ::tolower(c);});
-	    	*/
 
+#ifndef DIVBYSPC
+	    	/* Default:
+	    	 * term divided by any punctuation
+	    	 * e.g. U.S.A -> u, s, and a
+	    	 */
+	    	transform (begin(line),end(line),begin(line), [](char c){if (!isalnum(c)) c=' '; return ::tolower(c);});
+#else
 	    	// term divided by space and shrimp the punctuation
 	    	// e.g. U.S.A. -> usa
 	    	string tmp;
 	    	transform (begin(line),end(line),begin(line), ::tolower);
 	    	copy_if(begin(line),end(line),back_inserter(tmp),[](char c){return ::isalnum(c) || c==' ';});
 	    	line=tmp;
+#endif
 
             istringstream str(line);
             for (string term; str >> term;) {
@@ -123,6 +128,17 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
         }
 	}
 	file.close();
+}
+
+std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vector<std::string>& terms) {
+	auto r = std::map<int, double>{};
+	for(string& t : terms)
+		for (auto i : inverted_index[t].document_occurence)
+			r[i.first] += log2((double)document_num/inverted_index[t].document_occurence.size()) * ( log2(i.second)+1);
+
+	auto p = std::multimap<double, int, greater<double>>{};
+	for (auto i = r.begin(); i != r.end();++i) p.insert(pair<double,int>{i->second,i->first});
+	return p;
 }
 
 int InvertedIndexADT::binarySearch(const string& t,int low, int high, const Term& current, bool return_higher) {
