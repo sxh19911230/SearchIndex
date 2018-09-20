@@ -183,16 +183,14 @@ bool operator==(const Term&a,const Term&b) {
 	return a.doc == b.doc && a.index == b.index;
 }
 
-pair<int, int> InvertedIndexADT::nextCover(const std::vector<std::string>& terms, int doc_num, int ind_num) {
+pair<Term, Term> InvertedIndexADT::nextCover(const std::vector<std::string>& terms, int doc_num, int ind_num) {
 	set<Term,greater<Term>> result{};
 	for(const string& s : terms)
 		result.insert(next(s,doc_num,ind_num));
 	Term v= *result.begin();
-	if (v == infinity) return pair<int,int>{INT_MAX,INT_MAX};
-	Term u = v;
-	for(const string& s : terms)
-		u = u > inverted_index[s].terms[c[s]] ? inverted_index[s].terms[c[s]] : u;
-	if(v.doc == u.doc) return pair<int,int>{u.doc,u.index};
+	if (v == infinity) return pair<Term,Term>{infinity,infinity};
+	Term u = *result.rbegin();
+	if(v.doc == u.doc) return pair<Term,Term>{{u.doc,u.index},{v.doc,v.index}};
 	else return nextCover(terms, u.doc, u.index);
 
 }

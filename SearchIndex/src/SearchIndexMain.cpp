@@ -65,11 +65,11 @@ void unit_test_consine(InvertedIndexADT& t) {
 }
 
 void unit_test_next_cover(InvertedIndexADT& t) {
-	vector<string> str{"the"};
-	pair<int,int> v{0,0};
+	vector<string> str{"the","in"};
+	pair<Term,Term> v{{0,0},{0,0}};
 	while(true) {
-		v = t.nextCover(str,v.first,v.second);
-		if (v.first==INT_MAX && v.second==INT_MAX) break;
-		cout << v.first << ' ' << v.second << '\n';
+		v = t.nextCover(str,v.first.doc,v.first.index);
+		if (v.first==Term{INT_MAX,INT_MAX}) break;
+		cout << v.first.doc << ' ' << v.first.index << ' ' << v.second.doc << ' '<< v.second.index << '\n';
 	}
 }

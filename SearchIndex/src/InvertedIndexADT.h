@@ -41,7 +41,7 @@ public:
 	//ADT functions
 	const Term& next(const std::string& term, int doc_num, int ind_num);
 	const Term& prev(const std::string& term, int doc_num, int ind_num);
-	std::pair<int,int> nextCover(const std::vector<std::string>&, int,int);
+	std::pair<Term,Term> nextCover(const std::vector<std::string>&, int,int);
 
 	//These two are not implemented yet
 	int nextDoc(std::string& term, int doc_num);
