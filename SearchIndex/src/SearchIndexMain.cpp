@@ -3,6 +3,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 
 #include "InvertedIndexADT.h"
 
@@ -13,25 +14,38 @@ void unit_test_next(InvertedIndexADT&);
 void unit_test_prev(InvertedIndexADT&);
 void unit_test_consine(InvertedIndexADT& t);
 void unit_test_next_cover(InvertedIndexADT& t);
+void unit_test_Proximity(InvertedIndexADT& t);
 
 int main(int args, char** argv) try {
-	//if (args != 5) {usage(argv[0]);return 0;}
 
-	InvertedIndexADT t{"testfile.txt"};
-	//t.print_inveted_index();
-	//* Unit Test
-	//unit_test_next(t);
-	//unit_test_prev(t);
-	//unit_test_next(t);
-	 unit_test_next_cover(t);
-
-	//*/
 #ifdef PRT
 	t.print_inveted_index();
 #else
-	//unit_test_consine(t);
-#endif
+	if (args != 5) {usage(argv[0]);return 0;}
 
+	istringstream is {argv[4]};
+	vector<string> terms;
+	while (is) {
+		string t;
+		is >> t;
+		if (t!="")terms.push_back(t);
+	}
+
+	int k = atoi(argv[3]);
+	InvertedIndexADT t{argv[1]};
+
+	std::multimap<double, int,greater<double>> r;
+	if (string{argv[2]} == string{"cos"})
+		r=t.rankCosine(terms);
+	else
+		r=t.rankProximity(terms);
+	int j = 0;
+	cout << "ID  Score" << '\n';
+	for(auto i = r.begin() ; i != r.end() && j < k;++i,++j)
+		cout << i->second << ' ' << i->first << '\n';
+
+	//unit_test_Proximity(t);
+#endif
 
 } catch (FileNotExist& e) {
 	cout << "Unable to open File " << argv[5] << '\n';
@@ -39,7 +53,7 @@ int main(int args, char** argv) try {
 }
 
 void usage(char* arg) {
-	cout << "usage: " << arg << "<file> [cos|proximity] <#output> <query>\n";
+	cout << "usage: " << arg << " <file> [cos|proximity] <#output> <query>\n";
 }
 
 void unit_test_next(InvertedIndexADT & t) {
@@ -72,4 +86,12 @@ void unit_test_next_cover(InvertedIndexADT& t) {
 		if (v.first==Term{INT_MAX,INT_MAX}) break;
 		cout << v.first.doc << ' ' << v.first.index << ' ' << v.second.doc << ' '<< v.second.index << '\n';
 	}
+}
+
+void unit_test_Proximity(InvertedIndexADT& t) {
+	vector<string> str{"the","in"};
+		auto p = t.rankProximity(str);
+		cout << "ID  Score" << '\n';
+		for (auto q : p)
+			cout << q.second << ' ' << q.first << '\n';
 }

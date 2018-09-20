@@ -142,9 +142,32 @@ std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vec
 	return p;
 }
 
-std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankProximity(std::vector<std::string>& allocator) {
+std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankProximity(std::vector<std::string>& terms) {
 
 	auto p = std::multimap<double, int, greater<double>>{};
+	pair<Term,Term> nc = nextCover(terms, 0,0);
+	Term u = nc.first;
+	Term v = nc.second;
+	int d = u.doc;
+	double score = 0.0;
+
+	while(u < infinity) {
+		if (d<u.doc) {
+
+			p.insert(pair<double,int>{score,d});
+			d=u.doc;
+			score=0.0;
+		}
+		score=score+1.0/(v.index-u.index+1);
+		nc = nextCover(terms, u.doc,u.index);
+		u=nc.first;
+		v=nc.second;
+	}
+
+	if (d < INT_MAX) {
+		p.insert(pair<double,int>{score,d});
+	}
+
 	return p;
 }
 
