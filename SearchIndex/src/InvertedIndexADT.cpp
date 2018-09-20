@@ -43,29 +43,50 @@ const Term& InvertedIndexADT::next(const std::string& term, int doc_num, int ind
 			c[term]=0;
 			return P[c[term]];
 	}
-	size_t low = 0;
+	int low = 0;
 	if (c[term] > 0 && P[c[term]-1] <= current)
 		low = c[term]-1;
 	else
 		low=0;
 
 	int jump=1;
-	size_t high = low+jump;
+	int high = low+jump;
 
-	while(high < P.size() && P[high] <= current) {
+	while(high < (int)P.size() && P[high] <= current) {
 		low=high;
 		jump=2*jump;
 		high=low+jump;
 	}
-	if (high > P.size()) high = P.size();
+	if (high > (int)P.size()-1) high = P.size()-1;
 	c[term] = binarySearch(term,low,high,current);
 	return P[c[term]];
 }
 
 
-const Term& InvertedIndexADT::prev(const std::string& term, int doc_num, int current) {
+const Term& InvertedIndexADT::prev(const std::string& term, int doc_num, int ind_num) {
+	const std::vector<Term>& P = inverted_index[term].terms;
+		const Term current {doc_num,ind_num};
 
-	return unfounded;
+		if (P.size()==0 || P.front() >= current)
+			return unfounded;
+		if (P.back() < current){
+			c[term]=P.size()-1;
+			return P[c[term]];
+		}
+		int high= (c[term] < P.size() -1 && P[c[term]+1] >= current) ?
+			c[term]+1 :	P.size()-1;
+
+		int jump=1;
+		int low = high-jump;
+
+		while(low > 0 && P[low] >= current) {
+			high=low;
+			jump=2*jump;
+			low=high-jump;
+		}
+		if (low < 0) low = 0;
+		c[term] = binarySearch(term,low,high,current,false);
+		return P[c[term]];
 }
 
 
@@ -82,7 +103,18 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 	        ++document_num;
 	        indexNum=-1;
 	    } else {
+	    	/* term divided by any punctuation
+	    	 * e.g. U.S.A -> u, s, and a
 	    	transform (begin(line),end(line),begin(line), [](char c){if (!isalnum(c)) c=' '; return ::tolower(c);});
+	    	*/
+
+	    	// term divided by space and shrimp the punctuation
+	    	// e.g. U.S.A. -> usa
+	    	string tmp;
+	    	transform (begin(line),end(line),begin(line), ::tolower);
+	    	copy_if(begin(line),end(line),back_inserter(tmp),[](char c){return ::isalnum(c) || c==' ';});
+	    	line=tmp;
+
             istringstream str(line);
             for (string term; str >> term;) {
             	++inverted_index[term].document_occurence[document_num];
@@ -93,17 +125,17 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 	file.close();
 }
 
-int InvertedIndexADT::binarySearch(const string& t,int low, int high, const Term& current) {
+int InvertedIndexADT::binarySearch(const string& t,int low, int high, const Term& current, bool return_higher) {
 	int i = (low + high) / 2;
 	while(true){
-		if (current==inverted_index[t].terms[i]) return i+1;
+		if (current==inverted_index[t].terms[i]) return i+(return_higher?1:-1);
 		else if (current<inverted_index[t].terms[i]) {
-			if(high == i) return i;
+			if(high == i) return i+(return_higher?0:-1);
 			high = i;
 			i=(i+low)/2;
 		}
 		else if (inverted_index[t].terms[i] < current){
-			if (low == i) return i+1;
+			if (low == i) return i+(return_higher?1:0);
 			low = i;
 			i=(i+high)/2;
 		}

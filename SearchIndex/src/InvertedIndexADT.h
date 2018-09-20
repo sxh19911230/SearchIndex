@@ -46,7 +46,7 @@ public:
 private:
 	//helper function
 	void init_inveted_index(std::string filename);
-	int binarySearch(const std::string& term,int low, int high, const Term& current);
+	int binarySearch(const std::string& term,int low, int high, const Term& current, bool return_higher = true);
 
 	//data members
 	//inverted index
@@ -55,7 +55,7 @@ private:
 
 	 //last index positions for terms for next
 	 //Galloping Search
-	 std::map<std::string, int> c;
+	 std::map<std::string, std::size_t> c;
 };
 
 class FileNotExist{};
