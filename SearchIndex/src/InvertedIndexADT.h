@@ -50,6 +50,9 @@ public:
 	//rankCosine return (score, doc_id)
 	std::multimap<double,int,std::greater<double>> rankCosine(std::vector<std::string>&);
 
+	//rankProximity
+	std::multimap<double,int,std::greater<double>> rankProximity(std::vector<std::string>&);
+
 	//rankCover
 
 	// print the index DEBUG use

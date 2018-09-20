@@ -142,6 +142,12 @@ std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vec
 	return p;
 }
 
+std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankProximity(std::vector<std::string>& allocator) {
+
+	auto p = std::multimap<double, int, greater<double>>{};
+	return p;
+}
+
 int InvertedIndexADT::binarySearch(const string& t,int low, int high, const Term& current, bool return_higher) {
 	int i = (low + high) / 2;
 	while(true){
@@ -186,7 +192,7 @@ pair<int, int> InvertedIndexADT::nextCover(const std::vector<std::string>& terms
 	Term u = v;
 	for(const string& s : terms)
 		u = u > inverted_index[s].terms[c[s]] ? inverted_index[s].terms[c[s]] : u;
-	if(v.doc == u.doc) return pair<int,int>{u.index,v.index};
-	else return nextCover(terms, u.doc,u.index);
+	if(v.doc == u.doc) return pair<int,int>{u.doc,u.index};
+	else return nextCover(terms, u.doc, u.index);
 
 }
