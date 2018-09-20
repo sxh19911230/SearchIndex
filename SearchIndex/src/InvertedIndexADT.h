@@ -25,14 +25,20 @@ struct TermList {
 	std::vector<Term> terms;
 };
 
+bool operator<(const Term&,const Term&);
+bool operator>(const Term&,const Term&);
+bool operator<=(const Term&,const Term&);
+bool operator>=(const Term&,const Term&);
+bool operator==(const Term&,const Term&);
+
 class InvertedIndexADT {
 public:
 	InvertedIndexADT(std::string filename);
 
 
 	//ADT functions
-	const Term& next(std::string term, int doc_num, int current);
-	const Term& prev(std::string term, int doc_num, int current);
+	const Term& next(const std::string& term, int doc_num, int current);
+	const Term& prev(const std::string& term, int doc_num, int current);
 
 
 	// print the index DEBUG use
@@ -40,6 +46,7 @@ public:
 private:
 	//helper function
 	void init_inveted_index(std::string filename);
+	int binarySearch(const std::string& term,int low, int high, const Term& current);
 
 	//data members
 	//inverted index
@@ -47,7 +54,8 @@ private:
 	 std::map<std::string,TermList> inverted_index{};
 
 	 //last index positions for terms for next
-	 std::map<std::string, int> list_index_positions;
+	 //Galloping Search
+	 std::map<std::string, int> c;
 };
 
 class FileNotExist{};

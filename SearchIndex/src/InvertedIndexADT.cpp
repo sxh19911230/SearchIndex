@@ -32,26 +32,38 @@ void InvertedIndexADT::print_inveted_index() {
 	}
 }
 
-const Term& InvertedIndexADT::next(std::string term, int doc_num, int current) {
-	const std::vector<Term>& term_array = inverted_index[term].terms;
+//Galloping Search
+const Term& InvertedIndexADT::next(const std::string& term, int doc_num, int ind_num) {
+	const std::vector<Term>& P = inverted_index[term].terms;
+	const Term current {doc_num,ind_num};
 
-
-	if (term_array.size()==0 ||
-			(term_array.back().doc <= doc_num &&
-					term_array.back().index <= current))
+	if (P.size()==0 || P.back() <= current)
 		return unfounded;
-	if (term_array[0].doc > doc_num || (term_array[0].doc == doc_num && term_array[0].index > current)){
-			list_index_positions[term]=0;
-			return term_array[list_index_positions[term]];
+	if (P[0] > current){
+			c[term]=0;
+			return P[c[term]];
 	}
-	//TODO
+	size_t low = 0;
+	if (c[term] > 0 && P[c[term]-1] <= current)
+		low = c[term]-1;
+	else
+		low=0;
 
-	return unfounded;
+	int jump=1;
+	size_t high = low+jump;
 
+	while(high < P.size() && P[high] <= current) {
+		low=high;
+		jump=2*jump;
+		high=low+jump;
+	}
+	if (high > P.size()) high = P.size();
+	c[term] = binarySearch(term,low,high,current);
+	return P[c[term]];
 }
 
 
-const Term& InvertedIndexADT::prev(std::string term, int doc_num, int current) {
+const Term& InvertedIndexADT::prev(const std::string& term, int doc_num, int current) {
 
 	return unfounded;
 }
@@ -80,3 +92,40 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 	}
 	file.close();
 }
+
+int InvertedIndexADT::binarySearch(const string& t,int low, int high, const Term& current) {
+	int i = (low + high) / 2;
+	while(true){
+		if (current==inverted_index[t].terms[i]) return i+1;
+		else if (current<inverted_index[t].terms[i]) {
+			if(high == i) return i;
+			high = i;
+			i=(i+low)/2;
+		}
+		else if (inverted_index[t].terms[i] < current){
+			if (low == i) return i+1;
+			low = i;
+			i=(i+high)/2;
+		}
+	}
+}
+
+bool operator<(const Term& a,const Term& b) {
+	return a.doc < b.doc ||(a.doc == b.doc && a.index < b.index);
+}
+
+bool operator>(const Term& a,const Term& b) {
+	return a.doc > b.doc ||(a.doc == b.doc && a.index > b.index);
+}
+
+inline bool operator<=(const Term&a,const Term&b) {
+	return !(a>b);
+}
+inline bool operator>=(const Term&a,const Term&b) {
+	return !(a<b);
+}
+bool operator==(const Term&a,const Term&b) {
+	return a.doc == b.doc && a.index == b.index;
+}
+
+
