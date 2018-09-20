@@ -23,7 +23,11 @@ int main(int args, char** argv) try {
 	unit_test_prev(t);
 	//unit_test_next(t);
 	//*/
+#ifdef PRT
+	t.print_inveted_index();
+#else
 	unit_test_consine(t);
+#endif
 
 
 } catch (FileNotExist& e) {
