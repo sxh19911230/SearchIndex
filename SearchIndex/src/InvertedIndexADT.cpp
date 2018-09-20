@@ -14,7 +14,7 @@
 using namespace std;
 
 //inline vector returned when result not found
-static const vector<int> unfounded{-1,-1};
+static const Term& unfounded{-1,-1};
 
 InvertedIndexADT::InvertedIndexADT(std::string filename) {
 	this->init_inveted_index(filename);
@@ -22,25 +22,25 @@ InvertedIndexADT::InvertedIndexADT(std::string filename) {
 
 void InvertedIndexADT::print_inveted_index() {
 	for(auto i = inverted_index.begin();i != inverted_index.end();++i){
-	    cout << i->first << '\n' << i->second.document_occurence.size() <<','<<i->second.term_index.size() << '\n';
+	    cout << i->first << '\n' << i->second.document_occurence.size() <<','<<i->second.terms.size() << '\n';
 	    for (auto j = i->second.document_occurence.begin();j!= i->second.document_occurence.end();j++)
 	    	cout << '(' <<j->first << ',' << j->second << ") ";
 	    cout << '\n';
-	    for (auto j = i->second.term_index.begin();j != i->second.term_index.end();++j)
-	        cout << '(' << j->at(0) << ',' << j->at(1) << ") ";
+	    for (auto j = i->second.terms.begin();j != i->second.terms.end();++j)
+	        cout << '(' << j->doc << ',' << j->index << ") ";
 	    cout << '\n';
 	}
 }
 
-const vector<int>& InvertedIndexADT::next(std::string term, int doc_num, int current) {
-	const std::vector<vector<int>>& term_array = inverted_index[term].term_index;
+const Term& InvertedIndexADT::next(std::string term, int doc_num, int current) {
+	const std::vector<Term>& term_array = inverted_index[term].terms;
 
 
 	if (term_array.size()==0 ||
-			(term_array.back()[0] <= doc_num &&
-					term_array.back()[1] <= current))
+			(term_array.back().doc <= doc_num &&
+					term_array.back().index <= current))
 		return unfounded;
-	if (term_array[0][0] > doc_num || (term_array[0][0] == doc_num && term_array[0][1] > current)){
+	if (term_array[0].doc > doc_num || (term_array[0].doc == doc_num && term_array[0].index > current)){
 			list_index_positions[term]=0;
 			return term_array[list_index_positions[term]];
 	}
@@ -51,7 +51,7 @@ const vector<int>& InvertedIndexADT::next(std::string term, int doc_num, int cur
 }
 
 
-const vector<int>& InvertedIndexADT::prev(std::string term, int doc_num, int current) {
+const Term& InvertedIndexADT::prev(std::string term, int doc_num, int current) {
 
 	return unfounded;
 }
@@ -74,7 +74,7 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
             istringstream str(line);
             for (string term; str >> term;) {
             	++inverted_index[term].document_occurence[document_num];
-            	inverted_index[term].term_index.push_back(vector<int>{document_num, ++indexNum});
+            	inverted_index[term].terms.push_back(Term{document_num, ++indexNum});
             }
         }
 	}

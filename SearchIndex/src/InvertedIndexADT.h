@@ -14,11 +14,15 @@
 #include <memory>
 #include <set>
 
+struct Term {
+	int doc;
+	int index;
+};
 
-struct TermDetail {
+struct TermList {
 	std::map<int,int> document_occurence;
 	//list(document#, index#)
-	std::vector<std::vector<int>> term_index;
+	std::vector<Term> terms;
 };
 
 class InvertedIndexADT {
@@ -27,8 +31,8 @@ public:
 
 
 	//ADT functions
-	const std::vector<int>& next(std::string term, int doc_num, int current);
-	const std::vector<int>& prev(std::string term, int doc_num, int current);
+	const Term& next(std::string term, int doc_num, int current);
+	const Term& prev(std::string term, int doc_num, int current);
 
 
 	// print the index DEBUG use
@@ -40,7 +44,7 @@ private:
 	//data members
 	//inverted index
 	//(term: (document occurrences, list(document#, index#)))
-	 std::map<std::string,TermDetail> inverted_index{};
+	 std::map<std::string,TermList> inverted_index{};
 
 	 //last index positions for terms for next
 	 std::map<std::string, int> list_index_positions;
