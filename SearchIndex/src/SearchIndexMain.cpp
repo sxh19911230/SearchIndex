@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "InvertedIndexADT.h"
 
@@ -28,6 +29,7 @@ int main(int args, char** argv) try {
 	while (is) {
 		string t;
 		is >> t;
+		transform(t.begin(),t.end(),t.begin(),::tolower);
 		if (t!="")terms.push_back(t);
 	}
 

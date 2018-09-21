@@ -91,7 +91,6 @@ const Term& InvertedIndexADT::prev(const std::string& term, int doc_num, int ind
 		return P[c[term]];
 }
 
-
 void InvertedIndexADT::init_inveted_index(std::string filename) {
 	ifstream file(filename);
 	if (!file) {
