@@ -135,13 +135,10 @@ std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vec
 	auto doc_termNum_mapping = std::map<int, int>{};
 	pair<Term,Term> nc = nextCover(terms, 0,0);
 	Term u = nc.first;
-	Term v = nc.second;
-	int d = u.doc;
-
 
 	while(u < infinity) {
 		++doc_termNum_mapping[u.doc];
-		u = nextCover(terms, 0,0).first;
+		u = nextCover(terms, u.doc,u.index).first;
 	}
 
 	auto p = std::multimap<double, int, greater<double>>{};
