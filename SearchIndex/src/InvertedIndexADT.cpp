@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <climits>
 
 #include "InvertedIndexADT.h"
 using namespace std;
@@ -131,13 +132,23 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 }
 
 std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vector<std::string>& terms) {
-	auto r = std::map<int, double>{};
-	for(string& t : terms)
-		for (auto i : inverted_index[t].document_occurence)
-			r[i.first] += log2((double)document_num/inverted_index[t].document_occurence.size()) * ( log2(i.second)+1);
+	auto doc_termNum_mapping = std::map<int, int>{};
+	pair<Term,Term> nc = nextCover(terms, 0,0);
+	Term u = nc.first;
+	Term v = nc.second;
+	int d = u.doc;
+
+
+	while(u < infinity) {
+		++doc_termNum_mapping[u.doc];
+		u = nextCover(terms, 0,0).first;
+	}
 
 	auto p = std::multimap<double, int, greater<double>>{};
-	for (auto i = r.begin(); i != r.end();++i) p.insert(pair<double,int>{i->second,i->first});
+	for (auto i = doc_termNum_mapping.begin(); i != doc_termNum_mapping.end();++i){
+		double score = log2((double)document_num/doc_termNum_mapping.size())*log2(i->second);
+		p.insert(pair<double,int>(score,i->first));
+	}
 	return p;
 }
 

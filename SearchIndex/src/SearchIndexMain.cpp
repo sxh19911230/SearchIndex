@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <climits>
 
 #include "InvertedIndexADT.h"
 
@@ -19,9 +20,7 @@ void unit_test_Proximity(InvertedIndexADT& t);
 
 int main(int args, char** argv) try {
 
-#ifdef PRT
-	t.print_inveted_index();
-#else
+
 	if (args != 5) {usage(argv[0]);return 0;}
 
 	istringstream is {argv[4]};
@@ -47,7 +46,7 @@ int main(int args, char** argv) try {
 		cout << i->second << ' ' << i->first << '\n';
 
 	//unit_test_Proximity(t);
-#endif
+
 
 } catch (FileNotExist& e) {
 	cout << "Unable to open File " << argv[5] << '\n';
