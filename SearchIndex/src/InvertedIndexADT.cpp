@@ -132,20 +132,54 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 }
 
 std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vector<std::string>& terms) {
-	auto doc_termNum_mapping = std::map<int, int>{};
-	pair<Term,Term> nc = nextCover(terms, 0,0);
-	Term u = nc.first;
-
-	while(u < infinity) {
-		++doc_termNum_mapping[u.doc];
-		u = nextCover(terms, u.doc,u.index).first;
+	std::multimap<double, int,greater<double>> p{};
+	//Term current{0,0};
+	int d=0;
+	bool hasAllTerms = false;
+	while(d<infinity.doc && !hasAllTerms) {
+		for (auto t : terms) {
+			Term n = next(t,d,0);
+			d= max(d, n.doc);
+		}
+		hasAllTerms=true;
+		for (auto t : terms)
+			hasAllTerms*=inverted_index[t].document_occurence.count(d);
 	}
 
-	auto p = std::multimap<double, int, greater<double>>{};
-	for (auto i = doc_termNum_mapping.begin(); i != doc_termNum_mapping.end();++i){
-		double score = log2((double)document_num/doc_termNum_mapping.size())*log2(i->second);
-		p.insert(pair<double,int>(score,i->first));
+
+	while (d < infinity.doc) {
+		double score = 0.0;
+
+		for (auto t : terms) {
+			//find f(t,d)
+			int f = -1;
+			Term current {d,0};
+			do {
+				current = next(t,current.doc,current.index);
+				++f;
+			} while (current.doc == d);
+			//cout << t << ' ' << (float)document_num/inverted_index[t].document_occurence.size() << ' ' << f << endl;
+			score+= log2((float)document_num/inverted_index[t].document_occurence.size()) * (log2(f)+1);
+		}
+
+		p.insert(std::pair<double,int>{score,d});
+
+		hasAllTerms=false;
+		d++;
+		while(d<infinity.doc && !hasAllTerms) {
+				for (auto t : terms) {
+					Term n = next(t,d,0);
+					d= max(d, n.doc);
+				}
+				hasAllTerms=true;
+				for (auto t : terms)
+					hasAllTerms*=inverted_index[t].document_occurence.count(d);
+			}
+
 	}
+
+
+
 	return p;
 }
 

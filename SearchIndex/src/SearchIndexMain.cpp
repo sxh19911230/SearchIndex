@@ -1,4 +1,9 @@
-/*
+/** Authors: Xianghong Sun, Harita Shroff
+ *  Date: 09/25/2018
+ *  usage: SearchIndex <file> [cos|proximity] <#output> <query>
+ *
+ *  This program will stdout a list of
+ *
  *
  */
 
