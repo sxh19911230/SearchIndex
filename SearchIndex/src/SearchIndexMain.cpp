@@ -2,8 +2,9 @@
  *  Date: 09/25/2018
  *  usage: SearchIndex <file> [cos|proximity] <#output> <query>
  *
- *  This program will stdout a list of
- *
+ *  This program will stdout (#output) of document ID, score in Descending Order 
+ *  for each document that has all <query> terms in <file>. The ranking method can
+ *  be one of [cos|proximity]. 
  *
  */
 
@@ -43,8 +44,9 @@ int main(int args, char** argv) try {
 	std::multimap<double, int,greater<double>> r;
 	if (string{argv[2]} == string{"cos"})
 		r=t.rankCosine(terms);
-	else
+	else if (string{argv[2]} == string{"proximity"})
 		r=t.rankProximity(terms);
+	else exit(0);
 	int j = 0;
 	cout << "ID  Score" << '\n';
 	for(auto i = r.begin() ; i != r.end() && j < k;++i,++j)
