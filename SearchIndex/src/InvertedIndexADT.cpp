@@ -327,9 +327,13 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 				outPos++;
 
 			}
-		}
-		//TODO
-		else {
+		} else if (quotaLeft == 0) { //no accumulators left
+			for (int j = 0; j < acc.size();++j)
+				acc[j].score+=log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], acc[j].docId);
+
+
+		} else { //still have some accumulators
+			//TODO
 
 		}
 
