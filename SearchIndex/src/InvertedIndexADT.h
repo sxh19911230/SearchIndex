@@ -43,7 +43,6 @@ public:
 	const Term& prev(const std::string& term, int doc_num, int ind_num);
 	std::pair<Term,Term> nextCover(const std::vector<std::string>&, int,int);
 
-	//These two are not implemented yet
 	int nextDoc(std::string& term, int doc_num);
 	int prevDoc(std::string& term, int doc_num);
 
@@ -53,6 +52,9 @@ public:
 	//rankProximity
 	std::multimap<double,int,std::greater<double>> rankProximity(std::vector<std::string>&);
 
+	//rankBm25
+	std::multimap<double,int,std::greater<double>> rankBM25_TermAtATimeWithPruning(std::vector<std::string>&, int=1000, int=128);
+
 	//rankCover
 
 	// print the index DEBUG use
@@ -61,12 +63,17 @@ private:
 	//helper function
 	void init_inveted_index(std::string filename);
 	int binarySearch(const std::string& term,int low, int high, const Term& current, bool return_higher = true);
+	double TFBM25(std::string& term, int doc);
 
 	//data members
 	//inverted index
 	//(term: (document occurrences, list(document#, index#)))
 	 std::unordered_map<std::string,TermList> inverted_index{};
 	 int document_num{};
+
+	 //length of each doc
+	 std::vector<int> doc_length;
+	 double doc_len_ave{};
 
 	 //last index positions for terms for next
 	 //Galloping Search

@@ -23,6 +23,8 @@ void unit_test_prev(InvertedIndexADT&);
 void unit_test_consine(InvertedIndexADT& t);
 void unit_test_next_cover(InvertedIndexADT& t);
 void unit_test_Proximity(InvertedIndexADT& t);
+void unit_test_nextPage(InvertedIndexADT& t);
+void unit_test_prePage(InvertedIndexADT& t);
 
 int main(int args, char** argv) try {
 
@@ -40,7 +42,7 @@ int main(int args, char** argv) try {
 
 	int k = atoi(argv[3]);
 	InvertedIndexADT t{argv[1]};
-
+/*
 	std::multimap<double, int,greater<double>> r;
 	if (string{argv[2]} == string{"cos"})
 		r=t.rankCosine(terms);
@@ -51,9 +53,15 @@ int main(int args, char** argv) try {
 	cout << "ID  Score" << '\n';
 	for(auto i = r.begin() ; i != r.end() && j < k;++i,++j)
 		cout << i->second << ' ' << i->first << '\n';
+*/
 
-	//unit_test_Proximity(t);
+	//unit_test_prePage(t);
 
+	auto result = t.rankBM25_TermAtATimeWithPruning(terms);
+
+	for (auto tmp : result) {
+		cout << tmp.second << ':' << tmp.first << endl;
+	}
 
 } catch (FileNotExist& e) {
 	cout << "Unable to open File " << argv[5] << '\n';
@@ -102,4 +110,21 @@ void unit_test_Proximity(InvertedIndexADT& t) {
 		cout << "ID  Score" << '\n';
 		for (auto q : p)
 			cout << q.second << ' ' << q.first << '\n';
+}
+
+void unit_test_nextPage(InvertedIndexADT& t) {
+
+	string str = "the";
+	auto p = 0;
+	cout << "Next Page:" << '\n';
+	while(p != INT_MAX)
+		cout << (p = t.nextDoc(str,p)) << '\n';
+}
+
+void unit_test_prePage(InvertedIndexADT& t) {
+	string str = "the";
+	auto p = 100000;
+	cout << "Prev Page:" << '\n';
+	while(p != INT_MIN)
+		cout << (p = t.prevDoc(str,p)) << '\n';
 }

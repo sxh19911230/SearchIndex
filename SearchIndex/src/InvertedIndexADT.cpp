@@ -15,6 +15,11 @@
 #include "InvertedIndexADT.h"
 using namespace std;
 
+struct Accumulator {
+	int docId;
+	double score;
+};
+
 //inline vector returned when result not found
 static const Term& infinity{INT_MAX,INT_MAX};
 static const Term& ninfinity{INT_MIN,INT_MIN};
@@ -99,9 +104,13 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
 	}
 	int indexNum=0;
 	document_num = 1;
+	doc_length.push_back(0);
 	for (string line; getline(file,line);++indexNum) {
 	        //New Doc if \n\n, reset indexNum
 	    if (!line.size()) {
+	    	// push to length
+	    	doc_length.push_back(indexNum-1);
+	    	//re-init
 	        ++document_num;
 	        indexNum=-1;
 	    } else {
@@ -128,6 +137,15 @@ void InvertedIndexADT::init_inveted_index(std::string filename) {
             }
         }
 	}
+	doc_length.push_back(indexNum-1);
+	doc_len_ave=0.0;
+	for(auto t : doc_length) {
+		doc_len_ave+=t;
+		//cout << t << endl;
+	}
+
+	doc_len_ave/=doc_length.size();
+
 	file.close();
 }
 
@@ -159,7 +177,7 @@ std::multimap<double, int,greater<double>> InvertedIndexADT::rankCosine(std::vec
 				++f;
 			} while (current.doc == d);
 			//cout << t << ' ' << (float)document_num/inverted_index[t].document_occurence.size() << ' ' << f << endl;
-			score+= log2((float)document_num/inverted_index[t].document_occurence.size()) * (log2(f)+1);
+			score+= log2((double)document_num/inverted_index[t].document_occurence.size()) * (log2(f)+1);
 		}
 
 		p.insert(std::pair<double,int>{score,d});
@@ -257,4 +275,87 @@ pair<Term, Term> InvertedIndexADT::nextCover(const std::vector<std::string>& ter
 	if(v.doc == u.doc) return pair<Term,Term>{{u.doc,u.index},{v.doc,v.index}};
 	else return nextCover(terms, u.doc, u.index);
 
+}
+
+int InvertedIndexADT::nextDoc(std::string& term, int doc_num) {
+	auto t = inverted_index[term].document_occurence.upper_bound(doc_num);
+	if (t==inverted_index[term].document_occurence.end()) return INT_MAX;
+	return t->first;
+}
+
+int InvertedIndexADT::prevDoc(std::string& term, int doc_num) {
+	auto t = inverted_index[term].document_occurence.lower_bound(doc_num);
+	if (t==inverted_index[term].document_occurence.begin()) return INT_MIN;
+	return (--t)->first;
+}
+
+std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_TermAtATimeWithPruning(std::vector<std::string>& terms, int amax, int u) {
+	std::multiset<std::pair<int,string>> st;
+	for(string& t : terms)
+		st.emplace(inverted_index.count(t) ? inverted_index[t].document_occurence.size() : 0, t);
+
+	terms.clear();
+	for(auto& t : st) {
+		if (t.first != 0)
+			terms.push_back(t.second);
+		//cout << t.second << ' ' << t.first << endl;
+	}
+
+	vector<Accumulator> acc= vector<Accumulator>{}, accp =  vector<Accumulator>{};
+	acc.push_back(Accumulator{INT_MAX});
+	for(int i = 0; i < (int)terms.size();++i) {
+		int quotaLeft = amax-acc.size();
+		int inPos, outPos;
+		//cout << terms[i] << endl;
+		if ((int)inverted_index[terms[i]].document_occurence.size() <= quotaLeft) {
+			inPos=0; outPos=0;
+			for (auto& d_p : inverted_index[terms[i]].document_occurence) {
+				int d=d_p.first;
+				while (inPos < (int)acc.size() && acc[inPos].docId < d) {
+					accp.push_back(acc[inPos++]);
+					++outPos;
+				}
+
+				//cout << log2(document_num/inverted_index[terms[i]].document_occurence[d])*TFBM25(terms[i], d) << endl;
+				//cout << terms[i] << ':' << log2((double)document_num/inverted_index[terms[i]].document_occurence.size()) << endl;
+				accp.push_back(Accumulator{d,log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], d)});
+
+				if(acc[inPos].docId == d) {
+					accp[outPos].score += acc[inPos++].score;
+				}
+
+				outPos++;
+
+			}
+		}
+		//TODO
+		else {
+
+		}
+
+		while (acc[inPos].docId < INT_MAX) { // copy remaining acc to acc'
+			accp.push_back(acc[inPos++]);
+		}
+		accp.push_back(Accumulator{INT_MAX}); //end-of-list-marker
+		//swap acc and acc'
+		acc=std::move(accp);
+		accp.clear();
+	}
+
+	std::multimap<double, int, std::greater<double>> r{};
+
+	for (auto t : acc) {
+		r.emplace(t.score,t.docId);
+	}
+
+	return r;
+}
+
+double InvertedIndexADT::TFBM25(std::string& term, int doc) {
+	if (inverted_index[term].document_occurence.count(doc)) {
+		auto ftd = inverted_index[term].document_occurence[doc];
+		//cout << term << ':' << ftd*(1.2+1)/(ftd+1.2*(1-0.75+0.75*(doc_length[doc]/doc_len_ave))) << endl;
+
+		return ftd*(1.2+1)/(ftd+1.2*(1-0.75+0.75*(doc_length[doc]/doc_len_ave)));
+	} else return 0;
 }
