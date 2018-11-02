@@ -302,7 +302,7 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 	}
 
 	vector<Accumulator> acc= vector<Accumulator>{}, accp =  vector<Accumulator>{};
-	acc.push_back(Accumulator{INT_MAX});
+	//acc.push_back(Accumulator{INT_MAX});
 	for(int i = 0; i < (int)terms.size();++i) {
 		int quotaLeft = amax-acc.size();
 		int inPos, outPos;
@@ -320,7 +320,7 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 				//cout << terms[i] << ':' << log2((double)document_num/inverted_index[terms[i]].document_occurence.size()) << endl;
 				accp.push_back(Accumulator{d,log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], d)});
 
-				if(acc[inPos].docId == d) {
+				if(inPos < (int)acc.size() && acc[inPos].docId == d) {
 					accp[outPos].score += acc[inPos++].score;
 				}
 
@@ -341,11 +341,11 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 			outPos=0;
 			for (auto& d_p : inverted_index[terms[i]].document_occurence) {
 				int d = d_p.first;
-				while (inPos < acc[acc.size()-1].docId && acc[inPos].docId < d) {
+				while (inPos < (int) acc.size() && acc[inPos].docId < d) {
 					accp.push_back(acc[inPos++]);
 					++outPos;
 				}
-				if(acc[inPos].docId == d) {
+				if(inPos < (int) acc.size() && acc[inPos].docId == d) {
 					accp.push_back(Accumulator{d, acc[inPos++].score + log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], d)});
 					++outPos;
 				} else if (quotaLeft > 0) {
@@ -355,6 +355,7 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
                         --quotaLeft;
                     }
                     if (inverted_index[terms[i]].document_occurence[d] < k) ++tfStats[inverted_index[terms[i]].document_occurence[d]];
+                    else ++tfStats[k-1];
                 }
 				++postingsSeen;
 				if (postingsSeen % u == 0) {
@@ -364,16 +365,17 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 					for(;sum < quotaLeft && x < k;++x) {
 						sum+= q * tfStats[x];
 					}
-					T=x;
+					T=x+1;
+					//cout << quotaLeft << ' ' << q << ' ' << sum << endl;
 				}
 
 			}
 		}
 
-		while (acc[inPos].docId < INT_MAX) { // copy remaining acc to acc'
+		while (inPos < (int) acc.size()) { // copy remaining acc to acc'
 			accp.push_back(acc[inPos++]);
 		}
-		accp.push_back(Accumulator{INT_MAX}); //end-of-list-marker
+		//accp.push_back(Accumulator{INT_MAX}); //end-of-list-marker
 		//swap acc and acc'
 		acc=std::move(accp);
 		accp.clear();

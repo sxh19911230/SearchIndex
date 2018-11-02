@@ -57,7 +57,7 @@ int main(int args, char** argv) try {
 
 	//unit_test_prePage(t);
 
-	auto result = t.rankBM25_TermAtATimeWithPruning(terms,10,3);
+	auto result = t.rankBM25_TermAtATimeWithPruning(terms);
 
 	for (auto tmp : result) {
 		cout << tmp.second << ':' << tmp.first << endl;
