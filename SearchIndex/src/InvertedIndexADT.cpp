@@ -289,7 +289,7 @@ int InvertedIndexADT::prevDoc(std::string& term, int doc_num) {
 	return (--t)->first;
 }
 
-std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_TermAtATimeWithPruning(std::vector<std::string>& terms, int amax, int u) {
+std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_TermAtATimeWithPruning(std::vector<std::string>& terms,int k, int amax, int u) {
 	std::multiset<std::pair<int,string>> st;
 	for(string& t : terms)
 		st.emplace(inverted_index.count(t) ? inverted_index[t].document_occurence.size() : 0, t);
@@ -328,13 +328,46 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 
 			}
 		} else if (quotaLeft == 0) { //no accumulators left
-			for (int j = 0; j < acc.size();++j)
+			for (int j = 0; j < (int)acc.size();++j)
 				acc[j].score+=log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], acc[j].docId);
 
 
 		} else { //still have some accumulators
 			//TODO
+			vector<int> tfStats(k,0);
+			int T = 1;
+			int postingsSeen=0;
+			inPos=0;
+			outPos=0;
+			for (auto& d_p : inverted_index[terms[i]].document_occurence) {
+				int d = d_p.first;
+				while (inPos < acc[acc.size()-1].docId && acc[inPos].docId < d) {
+					accp.push_back(acc[inPos++]);
+					++outPos;
+				}
+				if(acc[inPos].docId == d) {
+					accp.push_back(Accumulator{d, acc[inPos++].score + log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], d)});
+					++outPos;
+				} else if (quotaLeft > 0) {
+                    if (inverted_index[terms[i]].document_occurence[d] >= T) { // if happens, make new accumlator
+                    	accp.push_back(Accumulator{d, log2((double)document_num/inverted_index[terms[i]].document_occurence.size())*TFBM25(terms[i], d)});
+                    	++outPos;
+                        --quotaLeft;
+                    }
+                    if (inverted_index[terms[i]].document_occurence[d] < k) ++tfStats[inverted_index[terms[i]].document_occurence[d]];
+                }
+				++postingsSeen;
+				if (postingsSeen % u == 0) {
+					double q = (double)(inverted_index[terms[i]].document_occurence.size()-postingsSeen)/postingsSeen;
+					double sum=0.0;
+					int x = 0;
+					for(;sum < quotaLeft && x < k;++x) {
+						sum+= q * tfStats[x];
+					}
+					T=x;
+				}
 
+			}
 		}
 
 		while (acc[inPos].docId < INT_MAX) { // copy remaining acc to acc'

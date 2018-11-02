@@ -53,7 +53,7 @@ public:
 	std::multimap<double,int,std::greater<double>> rankProximity(std::vector<std::string>&);
 
 	//rankBm25
-	std::multimap<double,int,std::greater<double>> rankBM25_TermAtATimeWithPruning(std::vector<std::string>&, int=1000, int=128);
+	std::multimap<double,int,std::greater<double>> rankBM25_TermAtATimeWithPruning(std::vector<std::string>&,int=10, int=1000, int=128);
 
 	//rankCover
 
