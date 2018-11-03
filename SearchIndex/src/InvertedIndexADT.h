@@ -1,8 +1,14 @@
-/*
- * SearchIndex.h
+/** Authors: Xianghong Sun, Harita Shroff, Yaoyan Xi
+ *  Date: 11/03/2018
  *
- *  Created on: 2018Äê9ÔÂ18ÈÕ
- *      Author: Forrest
+ *  This is the head file of the class InvertedIndexADT
+ *  It has some helper classes and helper functions.
+ *
+ *  Some classes includes:
+ *  Term: which is a struct of doc# and index#
+ *  TermList: which is a struct of document occurrence map, and list of Terms
+ *  FileNotExist: an exception class that will be thrown when the input file is not found
+ *  InvertedIndexADT: the main class. has variety of member functions to analyze the documents
  */
 
 #ifndef INVERTEDINDEXADT_H_
@@ -53,7 +59,7 @@ public:
 	std::multimap<double,int,std::greater<double>> rankProximity(std::vector<std::string>&);
 
 	//rankBm25
-	std::multimap<double,int,std::greater<double>> rankBM25_TermAtATimeWithPruning(std::vector<std::string>&,int=10, int=1000, int=128);
+	std::multimap<double,int,std::greater<double>> rankBM25_TermAtATimeWithPruning(std::vector<std::string>&,int=10, int=10000, int=128);
 
 	//rankCover
 

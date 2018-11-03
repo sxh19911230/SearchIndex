@@ -1,10 +1,10 @@
-/** Authors: Xianghong Sun, Harita Shroff
- *  Date: 09/25/2018
- *  usage: SearchIndex <file> [cos|proximity] <#output> <query>
+/** Authors: Xianghong Sun, Harita Shroff, Yaoyan Xi
+ *  Date: 11/03/2018
+ *  usage: SearchIndex <file> [bm25|proximity] <#output> <query>
  *
- *  This program will stdout (#output) of document ID, score in Descending Order 
- *  for each document that has all <query> terms in <file>. The ranking method can
- *  be one of [cos|proximity]. 
+ *  This program will stdout (#output) of document ID, score in format of a trec_top_file
+ *  in Descending Order for each document that has all <query> terms in <file>.
+ *  The ranking method can be one of [bm25|proximity].
  *
  */
 
@@ -12,7 +12,7 @@
 #include <sstream>
 #include <algorithm>
 #include <climits>
-
+#include <iomanip>
 #include "InvertedIndexADT.h"
 
 using namespace std;
@@ -42,26 +42,20 @@ int main(int args, char** argv) try {
 
 	int k = atoi(argv[3]);
 	InvertedIndexADT t{argv[1]};
-/*
+
 	std::multimap<double, int,greater<double>> r;
-	if (string{argv[2]} == string{"cos"})
-		r=t.rankCosine(terms);
+	if (string{argv[2]} == string{"bm25"})
+		r=t.rankBM25_TermAtATimeWithPruning(terms);
 	else if (string{argv[2]} == string{"proximity"})
 		r=t.rankProximity(terms);
 	else exit(0);
 	int j = 0;
-	cout << "ID  Score" << '\n';
+	//cout << "ID  Score" << '\n';
 	for(auto i = r.begin() ; i != r.end() && j < k;++i,++j)
-		cout << i->second << ' ' << i->first << '\n';
-*/
+		cout << 351 << ' ' << 0 <<' ' << "FR940104-0-" <<setfill('0') << setw(5)<<i->second << ' ' << j+1 << ' ' << i->first << ' ' << "run-nam3" << '\n';
+
 
 	//unit_test_prePage(t);
-
-	auto result = t.rankBM25_TermAtATimeWithPruning(terms);
-
-	for (auto tmp : result) {
-		cout << tmp.second << ':' << tmp.first << endl;
-	}
 
 } catch (FileNotExist& e) {
 	cout << "Unable to open File " << argv[5] << '\n';

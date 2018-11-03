@@ -1,8 +1,10 @@
-/*
- * SearchIndex.cpp
+/** Authors: Xianghong Sun, Harita Shroff, Yaoyan Xi
+ *  Date: 11/03/2018
  *
- *  Created on: 2018Äê9ÔÂ18ÈÕ
- *      Author: Forrest
+ *  This is the implementation of the head file InvertedIndexADT.h
+ *
+ *  It has a class Accumulator to help adding bm25 scores.
+ *  It has some inline helper functions and constants.
  */
 
 #include <fstream>
@@ -305,9 +307,12 @@ std::multimap<double, int, std::greater<double> > InvertedIndexADT::rankBM25_Ter
 	//acc.push_back(Accumulator{INT_MAX});
 	for(int i = 0; i < (int)terms.size();++i) {
 		int quotaLeft = amax-acc.size();
+		//cout << quotaLeft;
+		//cout << inverted_index[terms[i]].document_occurence.size();
 		int inPos, outPos;
 		//cout << terms[i] << endl;
 		if ((int)inverted_index[terms[i]].document_occurence.size() <= quotaLeft) {
+			//cout << 0;
 			inPos=0; outPos=0;
 			for (auto& d_p : inverted_index[terms[i]].document_occurence) {
 				int d=d_p.first;
