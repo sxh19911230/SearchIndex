@@ -63,7 +63,7 @@ int main(int args, char** argv) try {
 }
 
 void usage(char* arg) {
-	cout << "usage: " << arg << " <file> [cos|proximity] <#output> <query>\n";
+	cout << "usage: " << arg << " <file> [bm25|proximity] <#output> <query>\n";
 }
 
 void unit_test_next(InvertedIndexADT & t) {
